@@ -17,18 +17,29 @@ app.get("/config", (req, res) => {
 
 app.post("/create-payment-intent", async (req, res) => {
   try {
-    const { stripeAmount } = req.body;
+    const { stripeAmount, availableTickets, numberOfTickets } = req.body;
 
-    const paymentIntent = await stripe.paymentIntents.create({
-      currency: "EGP",
-      amount: stripeAmount,
-      automatic_payment_methods: { enabled: true },
-    });
+    if (numberOfTickets > 10 || numberOfTickets > availableTickets) {
+      return res.status(400).send({
+        error: {
+          message: "e.message",
+        },
+      })
+    }
+    else {
 
-    // Send publishable key and PaymentIntent details to client
-    res.send({
-      clientSecret: paymentIntent.client_secret,
-    });
+      const paymentIntent = await stripe.paymentIntents.create({
+        currency: "EGP",
+        amount: stripeAmount,
+        automatic_payment_methods: { enabled: true },
+      });
+
+      // Send publishable key and PaymentIntent details to client
+      res.send({
+        clientSecret: paymentIntent.client_secret,
+      });
+
+    }
   } catch (e) {
     return res.status(400).send({
       error: {
